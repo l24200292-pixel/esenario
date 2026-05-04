@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head><style>body{margin:0;overflow:hidden;background:#000;}</style></head>
+<body>
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(5, 5, 5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.GridHelper(10, 20, 0x888888, 0x444444));
+        scene.add(new THREE.AmbientLight(0xffffff, 2));
+
+        const mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(2, 2, 2),
+            new THREE.MeshPhongMaterial({ color: 0x00fffb, transparent: true, opacity: 0.8 })
+        );
+        scene.add(mesh);
+
+        const orbit = new OrbitControls(camera, renderer.domElement);
+        const control = new TransformControls(camera, renderer.domElement);
+        
+        // --- ESTO ES LO IMPORTANTE: FORZAR MODO MOVER ---
+        control.setMode('translate'); 
+        control.attach(mesh);
+        scene.add(control.getHelper());
+
+        control.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Asegurar que responda al teclado
+        window.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case 'w': control.setMode('translate'); break;
+                case 'e': control.setMode('rotate'); break;
+                case 'r': control.setMode('scale'); break;
+            }
+        });
+    </script>
+</body>
+</html>
